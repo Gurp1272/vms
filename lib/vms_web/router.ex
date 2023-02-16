@@ -1,6 +1,8 @@
 defmodule VmsWeb.Router do
   use VmsWeb, :router
 
+  import VmsWeb.VolunteerAuthPlug
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,6 +10,7 @@ defmodule VmsWeb.Router do
     plug :put_root_layout, {VmsWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :authenticate_volunteer
   end
 
   pipeline :api do
@@ -17,7 +20,8 @@ defmodule VmsWeb.Router do
   scope "/", VmsWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    # get "/", PageController, :home
+    live "/:uuid", SignUpLive
   end
 
   # Other scopes may use custom stacks.

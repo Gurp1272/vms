@@ -20,6 +20,16 @@ config :vms, VmsWeb.Endpoint,
   pubsub_server: Vms.PubSub,
   live_view: [signing_salt: "WBni8x6C"]
 
+config :vms, Vms.Scheduler,
+    jobs: [
+      # At minute 0 past every 4th hour from 8 through 20 on every day-of-week from Monday through Friday.
+      {"0 8-20/4 * * 1-5", {Vms.Scheduler, :initialize, []}}
+    ]
+
+config :ex_twilio,
+    account_sid: {:system, "TWILIO_ACCOUNT_SID"},
+    auth_token:  {:system, "TWILIO_AUTH_TOKEN"}
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

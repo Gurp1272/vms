@@ -17,9 +17,11 @@ defmodule Vms.Application do
       # Start Finch
       {Finch, name: Vms.Finch},
       # Start the Endpoint (http/https)
-      VmsWeb.Endpoint
+      VmsWeb.Endpoint,
       # Start a worker by calling: Vms.Worker.start_link(arg)
       # {Vms.Worker, arg}
+      Vms.Scheduler,
+      {Vms.Genserver.Access, %{}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

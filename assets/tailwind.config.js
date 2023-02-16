@@ -4,6 +4,12 @@
 const plugin = require("tailwindcss/plugin")
 
 module.exports = {
+  mode: "jit",
+  purge: [
+    "./js/**/*.js",
+    "../lib/*_web.ex",
+    "../lib/*_web/**/*.*ex"
+  ],
   content: [
     "./js/**/*.js",
     "../lib/*_web.ex",
@@ -11,12 +17,11 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        brand: "#FD4F00",
-      }
+      colors: require("daisyui/src/colors")
     },
   },
   plugins: [
+    require("daisyui"),
     require("@tailwindcss/forms"),
     plugin(({addVariant}) => addVariant("phx-no-feedback", [".phx-no-feedback&", ".phx-no-feedback &"])),
     plugin(({addVariant}) => addVariant("phx-click-loading", [".phx-click-loading&", ".phx-click-loading &"])),
