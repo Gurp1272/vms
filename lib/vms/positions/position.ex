@@ -19,7 +19,12 @@ defmodule Vms.Positions.Position do
   @doc false
   def changeset(position, attrs) do
     position
-    |> cast(attrs, ~w[title shift_starttime shift_endtime]a)
+    |> cast(attrs, ~w[title shift_starttime shift_endtime volunteer_id]a)
+    |> exclusion_constraint(
+      :shift_starttime,
+      name: :overlapping_schedules,
+      message: "schedule conflict"
+    )
     |> validate_required(~w[title shift_starttime shift_endtime]a)
   end
 end

@@ -17,7 +17,7 @@ defmodule Vms.Scheduler do
   """
 
   def initialize do
-    Events.open_positions()
+    Events.open_positions_count()
     |> run()
   end
 
@@ -69,7 +69,7 @@ defmodule Vms.Scheduler do
 
   defp maybe_trigger_message(%Access{volunteer: volunteer, uuid: uuid}) do
     case State.valid?(uuid) do
-      true -> Twilio.send_message(volunteer, uuid)
+      true -> Twilio.send_message(:outreach, volunteer, uuid)
       _ -> Logger.error("#{volunteer} does not have a valid access key")
     end
   end

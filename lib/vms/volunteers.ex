@@ -4,7 +4,12 @@ defmodule Vms.Volunteers do
   """
 
   import Ecto.Query, warn: false
+  require Logger
   alias Vms.Repo
+  alias Vms.Access
+  alias Vms.Twilio
+  alias Vms.Requests
+  alias Vms.Genserver.Access, as: State
 
   alias Vms.Volunteers.Volunteer
 
@@ -111,9 +116,49 @@ defmodule Vms.Volunteers do
   def retrieve_volunteers(number) do
     query =
       from v in Volunteer,
-      order_by: [asc_nulls_first: v.datetime_last_contact],
-      limit: ^number
+        order_by: [asc_nulls_first: v.datetime_last_contact],
+        limit: ^number
 
     Repo.all(query)
+  end
+
+  def request_link(%{"first_name" => first_name, "last_name" => last_name, "phone" => phone}) do
+    {:ok, phone_number} = ExPhoneNumber.parse(phone, "US")
+    phone_number_string = "#{phone_number.national_number}"
+
+    first_name =
+      first_name
+      |> String.downcase()
+      |> String.capitalize()
+
+    last_name =
+      last_name
+      |> String.downcase()
+      |> String.capitalize()
+
+    query =
+      from v in Volunteer,
+        where:
+          v.first_name == ^first_name and v.last_name == ^last_name and
+            v.phone == ^phone_number_string
+
+    case Repo.one(query) do
+      nil ->
+        Requests.create_request(%{
+          first_name: first_name,
+          last_name: last_name,
+          phone: phone_number_string
+        })
+
+      volunteer ->
+        access_struct = Access.generate_struct(volunteer)
+
+        State.put(access_struct.uuid, access_struct)
+
+        case State.valid?(access_struct.uuid) do
+          true -> Twilio.send_message(:request, volunteer, access_struct.uuid)
+          _ -> Logger.info("invalid uuid in state")
+        end
+    end
   end
 end

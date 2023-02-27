@@ -18,7 +18,7 @@ defmodule Vms.Access do
     end)
   end
 
-  defp generate_struct(%Volunteer{} = volunteer) do
+  def generate_struct(%Volunteer{} = volunteer) do
     %Access{}
     |> Map.put(:volunteer, volunteer)
     |> generate_uuid()

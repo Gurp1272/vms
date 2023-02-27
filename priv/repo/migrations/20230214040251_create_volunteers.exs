@@ -15,5 +15,7 @@ defmodule Vms.Repo.Migrations.CreateVolunteers do
 
       timestamps()
     end
+
+    create unique_index(:volunteers, [:first_name, :last_name, :phone])
   end
 end

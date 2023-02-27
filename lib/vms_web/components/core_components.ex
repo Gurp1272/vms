@@ -620,6 +620,31 @@ defmodule VmsWeb.CoreComponents do
     end
   end
 
+  ## Custom components
+
+  attr :for, :any, default: nil
+
+  def request_modal(assigns) do
+    ~H"""
+    <.modal id="request-modal">
+      <:title>
+        Request Link
+      </:title>
+
+      <.simple_form :let={f} for={@for} phx-change="validate" phx-submit="save">
+        <.input field={{f, :first_name}} autocomplete="off" label="First Name" />
+        <.input field={{f, :last_name}} autocomplete="off" label="Last Name" />
+        <.input field={{f, :phone}} autocomplete="off" label="Phone Number" />
+        <:actions>
+          <.button disabled={!@for.source.valid?} phx-click={hide_modal("request-modal")}>
+            Request
+          </.button>
+        </:actions>
+      </.simple_form>
+    </.modal>
+    """
+  end
+
   @doc """
   Translates the errors for a field from a keyword list of errors.
   """

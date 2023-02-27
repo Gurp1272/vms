@@ -4,10 +4,10 @@ defmodule Vms.Twilio do
 
   @twilio_number "+18449822184"
 
-  def send_message(%Volunteer{phone: to} = volunteer, uuid) do
+  def send_message(type, %Volunteer{phone: to} = volunteer, uuid) do
     body =
       volunteer
-      |> generate_body(uuid)
+      |> generate_body(type, uuid)
 
     {:ok, _response} = Message.create(to: to, from: @twilio_number, body: body)
 
@@ -15,7 +15,17 @@ defmodule Vms.Twilio do
     :timer.sleep(1000)
   end
 
-  defp generate_body(%Volunteer{first_name: first_name, last_name: last_name}, uuid) do
+  defp generate_body(%Volunteer{first_name: first_name, last_name: last_name}, :request, uuid) do
+    "
+    Hello #{first_name} #{last_name},
+
+    Here is your requested access link:
+
+    #{VmsWeb.Endpoint.url()}/#{uuid}
+    "
+  end
+
+  defp generate_body(%Volunteer{first_name: first_name, last_name: last_name}, :outreach, uuid) do
     "
     Hello #{first_name} #{last_name},
     We need Gate Guards for upcoming events.

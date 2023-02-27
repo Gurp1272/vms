@@ -52,7 +52,8 @@ defmodule Vms.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:quantum, "~> 3.0"},
-      {:ex_twilio, "~> 0.9.1"}
+      {:ex_twilio, "~> 0.9.1"},
+      {:ex_phone_number, "~> 0.3"}
     ]
   end
 

@@ -1,5 +1,6 @@
 defmodule Vms.Genserver.Access do
   use GenServer
+  require Logger
 
   @moduledoc """
   Maintains map of %Vms.Access{} which have an expiry. Runs scrub to remove expired structs.
@@ -18,16 +19,20 @@ defmodule Vms.Genserver.Access do
   end
 
   @impl true
-  def handle_call({:pluck, key}, _from, access_key_map) do
-    {plucked, new_map} =
+  def handle_call({:pop, key}, _from, access_key_map) do
+    {popped, new_map} =
       access_key_map
-      |> pluck(key)
+      |> pop(key)
 
-    {:reply, plucked, new_map}
+    {:reply, popped, new_map}
   end
 
   def handle_call({:valid?, uuid}, _from, access_key_map) do
     {:reply, Map.has_key?(access_key_map, uuid), access_key_map}
+  end
+
+  def handle_call({:fetch, uuid}, _from, access_key_map) do
+    {:reply, Map.fetch(access_key_map, uuid), access_key_map}
   end
 
   @impl true
@@ -49,12 +54,12 @@ defmodule Vms.Genserver.Access do
   end
 
   # Client functions
-  def start_link(map) do
+  def start_link(map) when is_map(map) do
     GenServer.start_link(__MODULE__, map, name: __MODULE__)
   end
 
-  def pluck(key) do
-    GenServer.call(__MODULE__, {:pluck, key})
+  def pop(key) do
+    GenServer.call(__MODULE__, {:pop, key})
   end
 
   def put(key, value) do
@@ -65,14 +70,29 @@ defmodule Vms.Genserver.Access do
     GenServer.call(__MODULE__, {:valid?, uuid})
   end
 
+  def fetch(key) do
+    GenServer.call(__MODULE__, {:fetch, key})
+  end
+
+
   # Private functions
 
-  defp pluck(access_key_map, key), do: Map.pop(access_key_map, key)
+  defp pop(access_key_map, key), do: Map.pop(access_key_map, key)
 
-  defp put(access_key_map, key, value), do: Map.put(access_key_map, key, value)
+  defp put(access_key_map, key, value) do
+    IO.inspect(access_key_map, label: "map: ")
+    IO.inspect(key, label: "key: ")
+    IO.inspect(value, label: "value: ")
+    Map.put_new(access_key_map, key, value)
+  end
 
   defp schedule_scrub() do
     Process.send_after(self(), :scrub, @five_minutes)
+  end
+
+  # when map is empty
+  defp scrub(access_key_map) when access_key_map == %{} do
+    Logger.info("Access state is empty")
   end
 
   defp scrub(access_key_map) do

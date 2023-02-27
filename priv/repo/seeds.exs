@@ -14,14 +14,27 @@ alias Vms.Repo
 alias Vms.Events.Event
 alias Vms.Positions.Position
 alias Vms.Volunteers.Volunteer
+alias Vms.Requests.Request
 
 Repo.delete_all(Position)
 Repo.delete_all(Volunteer)
 Repo.delete_all(Event)
+Repo.delete_all(Request)
 
 
 start_time = DateTime.utc_now() |> DateTime.add(48, :hour) |> DateTime.truncate(:second)
 end_time = DateTime.utc_now() |> DateTime.add(50, :hour) |> DateTime.truncate(:second)
+
+past_start_time = DateTime.utc_now() |> DateTime.add(-48, :hour) |> DateTime.truncate(:second)
+past_end_time = DateTime.utc_now() |> DateTime.add(-46, :hour) |> DateTime.truncate(:second)
+
+{:ok, primary_volunteer} = Repo.insert(
+  %Volunteer{
+    first_name: "Isaac",
+    last_name: "Finley",
+    phone: "3856454006"
+  }
+)
 
 Repo.insert! %Event{
   name: "Church",
@@ -42,10 +55,31 @@ Repo.insert! %Event{
       title: "West Gate",
       shift_starttime: start_time,
       shift_endtime: end_time,
-      volunteer: %Volunteer{
-        first_name: "Isaac",
-        phone: "3856454006",
-      }
+      volunteer_id: primary_volunteer.id
+    }
+  ]
+}
+
+Repo.insert! %Event{
+  name: "Church",
+  event_starttime: past_start_time,
+  event_endtime: past_end_time,
+  positions: [
+    %Position{
+      title: "East Gate",
+      shift_starttime: past_start_time,
+      shift_endtime: past_end_time,
+    },
+    %Position{
+      title: "Center Gate",
+      shift_starttime: past_start_time,
+      shift_endtime: past_end_time,
+    },
+    %Position{
+      title: "West Gate",
+      shift_starttime: past_start_time,
+      shift_endtime: past_end_time,
+      volunteer_id: primary_volunteer.id
     }
   ]
 }
@@ -68,5 +102,26 @@ Repo.insert! %Volunteer{
   first_name: "Jingle",
   last_name: "Finley",
   phone: "8018596435",
+  datetime_last_contact: DateTime.utc_now()|> DateTime.add(6, :minute) |> DateTime.truncate(:second)
+}
+
+Repo.insert! %Volunteer{
+  first_name: "Faith",
+  last_name: "Finley",
+  phone: "8018596436",
+  datetime_last_contact: DateTime.utc_now()|> DateTime.add(6, :minute) |> DateTime.truncate(:second)
+}
+
+Repo.insert! %Volunteer{
+  first_name: "Ortell",
+  last_name: "Finley",
+  phone: "8018596437",
+  datetime_last_contact: DateTime.utc_now()|> DateTime.add(6, :minute) |> DateTime.truncate(:second)
+}
+
+Repo.insert! %Volunteer{
+  first_name: "Zuri",
+  last_name: "Finley",
+  phone: "8018596438",
   datetime_last_contact: DateTime.utc_now()|> DateTime.add(6, :minute) |> DateTime.truncate(:second)
 }

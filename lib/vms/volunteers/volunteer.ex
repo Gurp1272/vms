@@ -24,5 +24,6 @@ defmodule Vms.Volunteers.Volunteer do
     volunteer
     |> cast(attrs, ~w[first_name last_name phone note times_filled total_time_served datetime_last_served times_contacted datetime_last_contact]a)
     |> validate_required(~w[first_name last_name phone]a)
+    |> validate_format(:phone, ~r/^(\+0?1\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/)
   end
 end

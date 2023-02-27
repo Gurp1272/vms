@@ -1,66 +1,67 @@
 defmodule VmsWeb.InvalidLive do
-  use Phoenix.LiveView
-  alias Phoenix.LiveView.JS
+  use VmsWeb, :live_view
+
+  alias Vms.Volunteers
+  alias Vms.Volunteers.Volunteer
 
   def render(assigns) do
     ~H"""
     <div class="flex justify-center">
-      <div class="flex flex-col">
-        <div class="basis-1/3 flex flex-col">
-          <div
-            tabindex="0"
-            phx-click={JS.toggle(in: "collapse-open", out: "collapse-close")}
-            class="collapse collapse-open collapse-plus border border-base-300 bg-base-100 rounded-box"
-          >
-            <div class="collapse-title text-xl font-medium">
-              Event info
-            </div>
-            <div class="collapse-content">
-              <div class="overflow-x-auto">
-                <table class="table table-zebra w-full">
-                  <!-- head -->
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th>Name</th>
-                      <th>Job</th>
-                      <th>Favorite Color</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- row 1 -->
-                    <tr>
-                      <th>1</th>
-                      <td>Cy Ganderton</td>
-                      <td>Quality Control Specialist</td>
-                      <td>Blue</td>
-                    </tr>
-                    <!-- row 2 -->
-                    <tr>
-                      <th>2</th>
-                      <td>Hart Hagerty</td>
-                      <td>Desktop Support Technician</td>
-                      <td>Purple</td>
-                    </tr>
-                    <!-- row 3 -->
-                    <tr>
-                      <th>3</th>
-                      <td>Brice Swyre</td>
-                      <td>Tax Accountant</td>
-                      <td>Red</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+      <div class="flex-col">
+        <div class="card w-96 bg-primary text-primary-content">
+          <div class="card-body">
+            <h2 class="card-title">Invalid or Expired link</h2>
+            <p>Use the button below to request another.</p>
+            <div class="card-actions justify-end">
+              <button class="btn btn-secondary" phx-click={show_modal("request-modal")}>
+                Request Link
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <.request_modal for={@form} />
     </div>
     """
   end
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    changeset = Volunteers.change_volunteer(%Volunteer{})
+
+    {:ok,
+     socket
+     |> assign(:form, to_form(changeset))}
+  end
+
+  def handle_event(
+        "save",
+        %{"first_name" => _first_name, "last_name" => _last_name, "phone" => _phone} = params,
+        socket
+      ) do
+    changeset = Volunteers.change_volunteer(%Volunteer{})
+    request_link(params)
+
+    {:noreply, assign(socket, form: to_form(changeset))}
+  end
+
+  def handle_event("validate", params, socket) do
+    form =
+      %Volunteer{}
+      |> Volunteers.change_volunteer(params)
+      |> Map.put(:action, :insert)
+      |> to_form()
+
+    {:noreply, assign(socket, form: form)}
+  end
+
+  defp request_link(params) do
+    Task.Supervisor.start_child(
+      Vms.RequestSupervisor,
+      fn ->
+        Volunteers.request_link(params)
+      end,
+      shutdown: 60_000
+    )
   end
 end

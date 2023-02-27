@@ -104,8 +104,14 @@ defmodule Vms.Events do
 
   @doc """
   Retrieve open positions count for events that start within 30 days
+
+  ## Examples
+
+      iex> open_positions_count()
+      integer()
+
   """
-  def open_positions do
+  def open_positions_count do
     thirty_days_from_now =
       DateTime.utc_now()
       |> DateTime.add(30, :day)
@@ -117,17 +123,41 @@ defmodule Vms.Events do
 
     Repo.one!(query)
   end
+
+  @doc """
+  Retrieves events with open positions that start within 30 days
+
+  ## Examples
+
+      iex> open_positions()
+      [%Event{positions: [%Position{}...]}]
+  """
+  def open_positions do
+    thirty_days_from_now =
+      DateTime.utc_now()
+      |> DateTime.add(30, :day)
+
+    now = DateTime.utc_now()
+
+    query = from e in Event,
+          join: p in assoc(e, :positions),
+          where: is_nil(p.volunteer_id) and ^thirty_days_from_now > e.event_starttime and e.event_starttime > ^now,
+          preload: [positions: p]
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Returns list of upcoming events with positions volunteer has filled
+  """
+  def my_upcoming_events(volunteer_id) do
+    now = DateTime.utc_now()
+
+    query = from e in Event,
+          join: p in assoc(e, :positions),
+          where: p.volunteer_id == ^volunteer_id and e.event_starttime > ^now,
+          preload: [positions: p]
+
+    Repo.all(query)
+  end
 end
-
-# query = from e in Event,
-#           join: p in assoc(e, :positions),
-#           where: is_nil(p.volunteer_id) and e.event_starttime < ^thirty_days_from_now,
-#           select: count(p.id, :distinct)
-# returns count
-
-# query = from e in Event,
-#           join: p in assoc(e, :positions),
-#           where: is_nil(p.volunteer_id) and e.event_starttime < ^thirty_days_from_now,
-#           preload: [positions: p]
-
-# returns events within thirty days that have open positions

@@ -8,6 +8,10 @@ defmodule Vms.Positions do
 
   alias Vms.Positions.Position
 
+  def subscribe do
+    Phoenix.PubSub.subscribe(Vms.PubSub, "positions")
+  end
+
   @doc """
   Returns the list of positions.
 
@@ -71,6 +75,7 @@ defmodule Vms.Positions do
     position
     |> Position.changeset(attrs)
     |> Repo.update()
+    |> broadcast(:position_updated)
   end
 
   @doc """
@@ -101,4 +106,15 @@ defmodule Vms.Positions do
   def change_position(%Position{} = position, attrs \\ %{}) do
     Position.changeset(position, attrs)
   end
+
+  defp broadcast({:ok, position}, event) do
+    Phoenix.PubSub.broadcast(
+      Vms.PubSub,
+      "positions",
+      {event, position}
+    )
+    {:ok, position}
+  end
+
+  defp broadcast({:error, _reason} = error, _event), do: error
 end

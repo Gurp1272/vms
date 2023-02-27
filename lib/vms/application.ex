@@ -21,7 +21,9 @@ defmodule Vms.Application do
       # Start a worker by calling: Vms.Worker.start_link(arg)
       # {Vms.Worker, arg}
       Vms.Scheduler,
-      {Vms.Genserver.Access, %{}}
+      {Vms.Genserver.Access, %{}},
+      Vms.Presence,
+      {Task.Supervisor, name: Vms.RequestSupervisor}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
