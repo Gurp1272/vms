@@ -16,4 +16,6 @@ defmodule VmsWeb.VolunteerAuthPlug do
         |> Plug.Conn.halt()
     end
   end
+
+  def authenticate_volunteer(conn, _opts), do: conn
 end

@@ -80,9 +80,6 @@ defmodule Vms.Genserver.Access do
   defp pop(access_key_map, key), do: Map.pop(access_key_map, key)
 
   defp put(access_key_map, key, value) do
-    IO.inspect(access_key_map, label: "map: ")
-    IO.inspect(key, label: "key: ")
-    IO.inspect(value, label: "value: ")
     Map.put_new(access_key_map, key, value)
   end
 
